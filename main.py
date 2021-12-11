@@ -29,11 +29,10 @@ def infix_to_postfix(expression):  # input expression
 
 def eval_postfix(postfix, dictVal):
     stack = []
+    ansLine = []
     for ch in postfix:
         plus = None
-        if ch.strip() == '':
-            continue
-        elif ch == "&":
+        if ch == "&":
             plus = stack.pop() & stack.pop()
         elif ch == "|":
             plus = stack.pop() | stack.pop()
@@ -45,12 +44,13 @@ def eval_postfix(postfix, dictVal):
             stack.append(dictVal[ch])
         if plus is not None:
             stack.append(plus)
-            if ch != postfix[-1]:
-                print(plus, end=',')
-    return stack.pop()
+            ansLine.append(plus)
+    ansLine.append(stack.pop())
+    return ansLine
 
 
 def truthTable(postfix):
+    table = []
     listVar = []
     dictVal = {}
     for ch in postfix:
@@ -61,14 +61,35 @@ def truthTable(postfix):
     lines = list(product((True, False), repeat=numOfVar))
     lines.reverse()
     for line in lines:
+        tableLine = []
         for i in range(numOfVar):
             dictVal[listVar[i]] = line[i]
-            print(line[i], end=",")
-        print(eval_postfix(postfix, dictVal), end=";")
+            tableLine.append(line[i])
+        tableLine += eval_postfix(postfix, dictVal)
+        table.append(tableLine)
+    return table
 
 
-infix = input('Enter infix expression: ')
-print('infix expression: ', infix)
-postfix = infix_to_postfix(infix)
-print('postfix expression: ', postfix)
-truthTable(postfix)
+def writeTruthtable(table):
+    import sys
+    outfile = sys.argv[0]
+    outfile = outfile[0:-2]
+    outfile += "txt"
+    with open(outfile, 'w') as f:
+        for lines in table:
+            for item in lines:
+                f.write("%s\t" % item)
+            f.write("\n")
+    f.close()
+
+
+def main():
+    infix = input('Enter infix expression: ')
+    print('infix expression: ', infix)
+    postfix = infix_to_postfix(infix)
+    print('postfix expression: ', postfix)
+    table = truthTable(postfix)
+    writeTruthtable(table)
+
+
+main()
